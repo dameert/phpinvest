@@ -9,10 +9,9 @@ use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 
 final class Filesystem
 {
+    private const CHECKOUT_FOLDER = 'checkout';
     private SymfonyFilesystem $filesystem;
     private string $projectDir;
-
-    private const CHECKOUT_FOLDER = 'checkout';
 
     public function __construct(string $projectDir)
     {

@@ -1,0 +1,35 @@
+<?php
+
+$finder = PhpCsFixer\Finder::create()
+    ->exclude('config')
+    ->exclude('checkout')
+    ->exclude('public')
+    ->exclude('vendor')
+    ->ignoreDotFiles(true)
+    ->ignoreVCS(true)
+    ->in(__DIR__)
+;
+
+return PhpCsFixer\Config::create()
+    ->setRiskyAllowed(true)
+    ->setRules([
+        'array_syntax' => ['syntax' => 'short'],
+        'blank_line_before_return' => true,
+        'class_attributes_separation' => ['elements' => ['method']],
+        'date_time_immutable' => true,
+        'declare_strict_types' => true,
+        'final_class' => true,
+        'implode_call' => true,
+        'linebreak_after_opening_tag' => true,
+        'list_syntax' => ['syntax' => 'short'],
+        'no_unused_imports' => true,
+        'no_useless_else' => true,
+        'ordered_class_elements' => true,
+        'ordered_imports' => true,
+        'ordered_interfaces' => true,
+        '@PSR2' => true,
+        'strict_param' => true,
+        'yoda_style' => true,
+    ])
+    ->setFinder($finder)
+;

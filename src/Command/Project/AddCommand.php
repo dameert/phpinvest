@@ -14,9 +14,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class AddCommand extends Command
 {
-    private ProjectService $projectService;
-
     private const ARG_URL = 'url';
+    private ProjectService $projectService;
 
     public function __construct(ProjectService $gitProjectService)
     {

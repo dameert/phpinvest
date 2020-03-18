@@ -16,11 +16,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class CloneCommand extends Command
 {
-    private GitService $gitService;
-    private ProjectService $projectService;
-
     private const ARG_ORGANIZATION_NAME = 'organization_name';
     private const ARG_REPOSITORY_NAME = 'repository_name';
+    private GitService $gitService;
+    private ProjectService $projectService;
 
     public function __construct(GitService $gitService, ProjectService $gitProjectService)
     {
@@ -76,7 +75,7 @@ final class CloneCommand extends Command
 
         return $this->projectService->getByNames(
             $input->getArgument(self::ARG_ORGANIZATION_NAME),
-            $repositoryName !== 'all' ? $repositoryName : null
+            'all' !== $repositoryName ? $repositoryName : null
         );
     }
 }

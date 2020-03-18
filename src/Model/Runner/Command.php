@@ -16,6 +16,11 @@ final class Command
     {
     }
 
+    public function __invoke(): Process
+    {
+        return new Process($this->cmd, $this->directory, null, null, $this->timeout);
+    }
+
     public static function make(array $cmd, string $directory = null, float $timeout = 60.0): self
     {
         $command = new static;
@@ -24,10 +29,5 @@ final class Command
         $command->timeout = $timeout;
 
         return $command;
-    }
-
-    public function __invoke(): Process
-    {
-        return new Process($this->cmd, $this->directory, null, null, $this->timeout);
     }
 }

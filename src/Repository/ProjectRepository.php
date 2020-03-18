@@ -54,5 +54,4 @@ final class ProjectRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($gitProject);
         $this->getEntityManager()->flush();
     }
-
 }
