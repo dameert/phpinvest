@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpInvest\Command;
+namespace PhpInvest\Command\Project;
 
 use PhpInvest\Model\GitUrl;
 use PhpInvest\Service\ProjectService;
@@ -12,7 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-final class AddProjectCommand extends Command
+final class AddCommand extends Command
 {
     private ProjectService $projectService;
 

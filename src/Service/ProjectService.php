@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpInvest\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use PhpInvest\Entity\Project;
 use PhpInvest\Model\GitUrl;
 use PhpInvest\Repository\ProjectRepository;
@@ -17,9 +18,9 @@ final class ProjectService
         $this->repository = $repository;
     }
 
-    public function getByNames(string $organizationName, string $repositoryName = null): array
+    public function getAll(): ArrayCollection
     {
-        return $this->repository->findAllByNames($organizationName, $repositoryName);
+        return $this->repository->findAll();
     }
 
     public function getAllOrganizationNames(): array
@@ -27,9 +28,9 @@ final class ProjectService
         return $this->repository->findAllOrganizationNames();
     }
 
-    public function getAllRepositoryNames(): array
+    public function getByNames(string $organizationName, string $repositoryName = null): array
     {
-        return $this->repository->findAllRepositoryNames();
+        return $this->repository->findAllByNames($organizationName, $repositoryName);
     }
 
     public function createFromGitUrl(GitUrl $gitUrl): Project
@@ -44,5 +45,4 @@ final class ProjectService
 
         return $project;
     }
-
 }

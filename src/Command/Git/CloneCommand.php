@@ -2,38 +2,38 @@
 
 declare(strict_types=1);
 
-namespace PhpInvest\Command;
+namespace PhpInvest\Command\Git;
 
-use PhpInvest\Command\Helper\InteractHelper;
-use PhpInvest\Command\Helper\ProcessRunner;
+use PhpInvest\Command\Interactor;
 use PhpInvest\Entity\Project;
+use PhpInvest\Service\GitService;
 use PhpInvest\Service\ProjectService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
 
-final class CloneProjectCommand extends Command
+final class CloneCommand extends Command
 {
+    private GitService $gitService;
     private ProjectService $projectService;
 
     private const ARG_ORGANIZATION_NAME = 'organization_name';
     private const ARG_REPOSITORY_NAME = 'repository_name';
 
-    public function __construct(ProjectService $gitProjectService)
+    public function __construct(GitService $gitService, ProjectService $gitProjectService)
     {
-        parent::__construct('pi:project:clone');
+        parent::__construct('pi:git:clone');
 
+        $this->gitService = $gitService;
         $this->projectService = $gitProjectService;
     }
 
     protected function configure(): void
     {
         $this
-            ->setDescription('Clone project')
+            ->setDescription('Git clone project')
             ->addArgument(self::ARG_ORGANIZATION_NAME, InputArgument::REQUIRED, 'Organization name')
             ->addArgument(self::ARG_REPOSITORY_NAME, InputArgument::OPTIONAL, 'Repository name')
         ;
@@ -43,21 +43,14 @@ final class CloneProjectCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $fs = new Filesystem();
-        $projects = $this->getProjects($input);
-
-        foreach ($projects as $project) {
+        foreach ($this->getProjects($input) as $project) {
             $io->section(sprintf('Cloning %s', (string) $project));
 
-            $directory = sprintf('checkout/%s', $project->getRepositoryName());
-
-            if ($fs->exists($directory)) {
-                $io->warning(sprintf('Directory "%s" already exists', $directory));
-                continue;
+            try {
+                $this->gitService->clone($project);
+            } catch (\Exception $e) {
+                $io->error($e->getMessage());
             }
-
-            ProcessRunner::run(new Process(['git', 'clone', $project->getSSH(), $directory]));
-            ProcessRunner::run(new Process(['composer', 'install'], $directory, null, null, 300.00));
         }
 
         return 1;
@@ -65,7 +58,7 @@ final class CloneProjectCommand extends Command
 
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $interactHelper = new InteractHelper($input, $output, $this->getHelper('question'));
+        $interactHelper = new Interactor($input, $output, $this->getHelper('question'));
 
         $interactHelper->chooseArgument(
             self::ARG_ORGANIZATION_NAME,

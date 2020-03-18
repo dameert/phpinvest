@@ -27,6 +27,11 @@ final class Project
         return $this->repositoryName;
     }
 
+    public function getOrganizationName(): string
+    {
+        return $this->organizationName;
+    }
+
     public function getRepositoryName(): string
     {
         return $this->repositoryName;
@@ -35,5 +40,10 @@ final class Project
     public function getSSH(): string
     {
         return sprintf('git@%s:%s/%s', $this->host, $this->organizationName, $this->repositoryName);
+    }
+
+    public function getURL(): string
+    {
+        return sprintf('https://%s/%s/%s', $this->host, $this->organizationName, $this->repositoryName);
     }
 }
