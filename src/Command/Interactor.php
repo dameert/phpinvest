@@ -34,6 +34,12 @@ final class Interactor
             return;
         }
 
+        if (1 === \count($choices)) {
+            $this->input->setArgument($argument, $choices[0]);
+
+            return;
+        }
+
         $question = new ChoiceQuestion($questionText, $choices, 0);
         $this->input->setArgument($argument, $this->questionHelper->ask($this->input, $this->output, $question));
     }

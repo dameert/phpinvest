@@ -24,7 +24,12 @@ final class Project
 
     public function __toString(): string
     {
-        return $this->repositoryName;
+        return $this->getName();
+    }
+
+    public function getName(): string
+    {
+        return sprintf('%s/%s', $this->organizationName, $this->repositoryName);
     }
 
     public function getOrganizationName(): string

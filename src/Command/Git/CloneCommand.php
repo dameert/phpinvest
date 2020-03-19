@@ -6,24 +6,28 @@ namespace PhpInvest\Command\Git;
 
 use PhpInvest\Command\Interactor;
 use PhpInvest\Entity\Project;
+use PhpInvest\Exception\Git\AlreadyClonedException;
 use PhpInvest\Service\GitService;
 use PhpInvest\Service\ProjectService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class CloneCommand extends Command
 {
-    private const ARG_ORGANIZATION_NAME = 'organization_name';
-    private const ARG_REPOSITORY_NAME = 'repository_name';
+    public const NAME = 'pi:git:clone';
+    public const ARG_ORGANIZATION = 'organization';
+    public const ARG_REPOSITORY = 'repository';
+    public const OPTION_BRANCH = 'branch';
     private GitService $gitService;
     private ProjectService $projectService;
 
     public function __construct(GitService $gitService, ProjectService $gitProjectService)
     {
-        parent::__construct('pi:git:clone');
+        parent::__construct(self::NAME);
 
         $this->gitService = $gitService;
         $this->projectService = $gitProjectService;
@@ -33,22 +37,26 @@ final class CloneCommand extends Command
     {
         $this
             ->setDescription('Git clone project')
-            ->addArgument(self::ARG_ORGANIZATION_NAME, InputArgument::REQUIRED, 'Organization name')
-            ->addArgument(self::ARG_REPOSITORY_NAME, InputArgument::OPTIONAL, 'Repository name')
+            ->addArgument(self::ARG_ORGANIZATION, InputArgument::REQUIRED, 'Organization name')
+            ->addArgument(self::ARG_REPOSITORY, InputArgument::OPTIONAL, 'Repository name')
+            ->addOption(self::OPTION_BRANCH, 'b', InputOption::VALUE_REQUIRED, 'Branch name', 'master')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $io->title('Clone project(s)');
+
+        $branch = $input->getOption(self::OPTION_BRANCH);
 
         foreach ($this->getProjects($input) as $project) {
-            $io->section(sprintf('Cloning %s', (string) $project));
+            $io->note(sprintf('Cloning branch %s from %s', $branch, (string) $project));
 
             try {
-                $this->gitService->clone($project);
-            } catch (\Exception $e) {
-                $io->error($e->getMessage());
+                $this->gitService->clone($project, $branch);
+            } catch (AlreadyClonedException $e) {
+                $io->warning($e->getMessage());
             }
         }
 
@@ -60,7 +68,7 @@ final class CloneCommand extends Command
         $interactHelper = new Interactor($input, $output, $this->getHelper('question'));
 
         $interactHelper->chooseArgument(
-            self::ARG_ORGANIZATION_NAME,
+            self::ARG_ORGANIZATION,
             'Please select an organization name',
             fn () => $this->projectService->getAllOrganizationNames()
         );
@@ -71,10 +79,10 @@ final class CloneCommand extends Command
      */
     private function getProjects(InputInterface $input): array
     {
-        $repositoryName = $input->getArgument(self::ARG_REPOSITORY_NAME);
+        $repositoryName = $input->getArgument(self::ARG_REPOSITORY);
 
         return $this->projectService->getByNames(
-            $input->getArgument(self::ARG_ORGANIZATION_NAME),
+            $input->getArgument(self::ARG_ORGANIZATION),
             'all' !== $repositoryName ? $repositoryName : null
         );
     }

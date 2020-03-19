@@ -14,12 +14,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class ListCommand extends Command
 {
+    public const NAME = 'pi:project:list';
     private GitService $gitService;
     private ProjectService $projectService;
 
     public function __construct(GitService $gitService, ProjectService $gitProjectService)
     {
-        parent::__construct('pi:project:list');
+        parent::__construct(self::NAME);
 
         $this->gitService = $gitService;
         $this->projectService = $gitProjectService;
@@ -33,12 +34,12 @@ final class ListCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $io->title('List projects');
 
         $io->table(
-            ['Organization', 'Repository', 'Url', 'Branch'],
+            ['Name', 'Url', 'Branch'],
             $this->projectService->getAll()->map(fn (Project $project) => [
-                $project->getOrganizationName(),
-                $project->getRepositoryName(),
+                $project->getName(),
                 $project->getUrl(),
                 $this->gitService->getBranch($project),
             ])->toArray()

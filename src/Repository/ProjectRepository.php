@@ -6,6 +6,7 @@ namespace PhpInvest\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use PhpInvest\Entity\Project;
 
@@ -26,6 +27,34 @@ final class ProjectRepository extends ServiceEntityRepository
 
     public function findAllByNames(string $organizationName, string $repositoryName = null): array
     {
+        return $this->createQueryBuilderForNames($organizationName, $repositoryName)->getQuery()->getResult();
+    }
+
+    public function findAllOrganizationNames(): array
+    {
+        $qb = $this->getEntityManager()->getConnection()->createQueryBuilder();
+        $stmt = $qb->distinct()->select('organization_name')->from('tbl_project')->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+    }
+
+    public function findByNames(string $organizationName, string $repositoryName): ?Project
+    {
+        $result = $this
+            ->createQueryBuilderForNames($organizationName, $repositoryName)->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof Project ? $result : null;
+    }
+
+    public function save(Project $gitProject): void
+    {
+        $this->getEntityManager()->persist($gitProject);
+        $this->getEntityManager()->flush();
+    }
+
+    private function createQueryBuilderForNames(string $organizationName, string $repositoryName = null): QueryBuilder
+    {
         $qb = $this->createQueryBuilder('p');
         $qb
             ->andWhere($qb->expr()->eq('p.organizationName', ':organization_name'))
@@ -38,20 +67,6 @@ final class ProjectRepository extends ServiceEntityRepository
                 ->setParameter('repository_name', $repositoryName);
         }
 
-        return $qb->getQuery()->getResult();
-    }
-
-    public function findAllOrganizationNames(): array
-    {
-        $qb = $this->getEntityManager()->getConnection()->createQueryBuilder();
-        $stmt = $qb->distinct()->select('organization_name')->from('tbl_project')->execute();
-
-        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
-    }
-
-    public function save(Project $gitProject): void
-    {
-        $this->getEntityManager()->persist($gitProject);
-        $this->getEntityManager()->flush();
+        return $qb;
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpInvest\Model\Runner;
+namespace PhpInvest\Model\Process;
 
 final class Output
 {
