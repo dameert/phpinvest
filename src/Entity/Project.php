@@ -9,15 +9,17 @@ use Ramsey\Uuid\UuidInterface;
 
 final class Project
 {
-    private UuidInterface $id;
     private string $host;
+    private UuidInterface $id;
+    private string $name;
     private string $organizationName;
     private string $repositoryName;
 
-    public function __construct(string $host, string $organizationName, string $repositoryName)
+    public function __construct(string $host, string $name, string $organizationName, string $repositoryName)
     {
         $this->id = Uuid::uuid4();
         $this->host = $host;
+        $this->name = $name;
         $this->organizationName = $organizationName;
         $this->repositoryName = $repositoryName;
     }
@@ -29,7 +31,7 @@ final class Project
 
     public function getName(): string
     {
-        return sprintf('%s/%s', $this->organizationName, $this->repositoryName);
+        return $this->name;
     }
 
     public function getOrganizationName(): string
@@ -42,12 +44,12 @@ final class Project
         return $this->repositoryName;
     }
 
-    public function getSSH(): string
+    public function getSsh(): string
     {
         return sprintf('git@%s:%s/%s', $this->host, $this->organizationName, $this->repositoryName);
     }
 
-    public function getURL(): string
+    public function getUrl(): string
     {
         return sprintf('https://%s/%s/%s', $this->host, $this->organizationName, $this->repositoryName);
     }

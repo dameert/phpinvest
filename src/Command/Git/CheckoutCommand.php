@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PhpInvest\Command\Git;
 
 use PhpInvest\Command\Command;
-use PhpInvest\Exception\Git\AlreadyExistsException;
+use PhpInvest\Exception\Git\CheckoutNotFoundException;
 use PhpInvest\Invest\Collection\ProjectCollection;
 use PhpInvest\Service\Git\GitService;
 use PhpInvest\Service\Project\ProjectChoice;
@@ -14,9 +14,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class CloneCommand extends Command
+final class CheckoutCommand extends Command
 {
-    public const NAME = 'pi:git:clone';
+    public const NAME = 'pi:git:checkout';
     public const OPTION_BRANCH = 'branch';
 
     private GitService $gitService;
@@ -33,7 +33,7 @@ final class CloneCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Git clone project')
+            ->setDescription('Git checkout branch')
             ->addArgument(ProjectChoice::NAME, InputArgument::REQUIRED, ProjectChoice::DESCRIPTION)
             ->addOption(self::OPTION_BRANCH, 'b', InputOption::VALUE_REQUIRED, 'Branch name', 'master')
         ;
@@ -41,7 +41,7 @@ final class CloneCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io->title('Clone project(s)');
+        $this->io->title('Checkout branch for project(s)');
 
         $branch = $input->getOption(self::OPTION_BRANCH);
 
@@ -49,11 +49,12 @@ final class CloneCommand extends Command
             try {
                 $this->io->section($project->getName());
 
-                $this->gitService->clone($branch, $project);
+                $checkout = $this->gitService->getCheckout($project);
+                $this->gitService->checkout($checkout, $branch);
 
-                $this->io->success(sprintf('Cloned branch %s from %s', $branch, (string) $project));
-            } catch (AlreadyExistsException $e) {
-                $this->io->warning($e->getMessage());
+                $this->io->success(sprintf('Checkout branch %s for project %s', $branch, (string) $project));
+            } catch (CheckoutNotFoundException $e) {
+                $this->io->error($e->getMessage());
             }
         }
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpInvest\Model;
+namespace PhpInvest\Invest\Git;
 
-final class GitUrl
+final class Url
 {
     private string $url;
 

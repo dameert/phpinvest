@@ -6,7 +6,6 @@ namespace PhpInvest\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use PhpInvest\Entity\Project;
 
@@ -25,48 +24,21 @@ final class ProjectRepository extends ServiceEntityRepository
         return new ArrayCollection($qb->getQuery()->getResult());
     }
 
-    public function findAllByNames(string $organizationName, string $repositoryName = null): array
+    public function findByName(string $name): ?Project
     {
-        return $this->createQueryBuilderForNames($organizationName, $repositoryName)->getQuery()->getResult();
-    }
-
-    public function findAllOrganizationNames(): array
-    {
-        $qb = $this->getEntityManager()->getConnection()->createQueryBuilder();
-        $stmt = $qb->distinct()->select('organization_name')->from('tbl_project')->execute();
-
-        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
-    }
-
-    public function findByNames(string $organizationName, string $repositoryName): ?Project
-    {
-        $result = $this
-            ->createQueryBuilderForNames($organizationName, $repositoryName)->getQuery()
+        $qb = $this->createQueryBuilder('p');
+        $project = $qb
+            ->andWhere($qb->expr()->eq('p.name', ':name'))
+            ->setParameter('name', $name)
+            ->getQuery()
             ->getOneOrNullResult();
 
-        return $result instanceof Project ? $result : null;
+        return $project instanceof Project ? $project : null;
     }
 
     public function save(Project $gitProject): void
     {
         $this->getEntityManager()->persist($gitProject);
         $this->getEntityManager()->flush();
-    }
-
-    private function createQueryBuilderForNames(string $organizationName, string $repositoryName = null): QueryBuilder
-    {
-        $qb = $this->createQueryBuilder('p');
-        $qb
-            ->andWhere($qb->expr()->eq('p.organizationName', ':organization_name'))
-            ->orderBy('p.repositoryName')
-            ->setParameter('organization_name', $organizationName);
-
-        if ($repositoryName) {
-            $qb
-                ->andWhere($qb->expr()->eq('p.repositoryName', ':repository_name'))
-                ->setParameter('repository_name', $repositoryName);
-        }
-
-        return $qb;
     }
 }

@@ -3,17 +3,18 @@
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                           https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
-    <entity name="PhpInvest\Entity\Project" table="tbl_project">
+    <entity name="PhpInvest\Entity\GitRevision" table="tbl_git_revision">
         <unique-constraints>
-            <unique-constraint columns="name" name="unique_project" />
+            <unique-constraint columns="branch,hash" name="unique_revision" />
         </unique-constraints>
         <id name="id" column="id" type="uuid">
             <generator strategy="CUSTOM"/>
             <custom-id-generator class="Ramsey\Uuid\Doctrine\UuidGenerator"/>
         </id>
-        <field name="host"/>
-        <field name="name"/>
-        <field name="organizationName" column="organization_name"/>
-        <field name="repositoryName" column="repository_name"/>
+        <field name="author"/>
+        <field name="authorEmail" column="author_email"/>
+        <field name="branch"/>
+        <field name="commitDate" column="commit_date" type="date_immutable"/>
+        <field name="hash"/>
     </entity>
 </doctrine-mapping>

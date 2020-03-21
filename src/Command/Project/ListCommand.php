@@ -4,26 +4,25 @@ declare(strict_types=1);
 
 namespace PhpInvest\Command\Project;
 
+use PhpInvest\Command\Command;
 use PhpInvest\Entity\Project;
-use PhpInvest\Service\GitService;
-use PhpInvest\Service\ProjectService;
-use Symfony\Component\Console\Command\Command;
+use PhpInvest\Service\Invest\InvestService;
+use PhpInvest\Service\Project\ProjectService;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class ListCommand extends Command
 {
     public const NAME = 'pi:project:list';
-    private GitService $gitService;
+
+    private InvestService $investService;
     private ProjectService $projectService;
 
-    public function __construct(GitService $gitService, ProjectService $gitProjectService)
+    public function __construct(InvestService $investService, ProjectService $projectService)
     {
         parent::__construct(self::NAME);
-
-        $this->gitService = $gitService;
-        $this->projectService = $gitProjectService;
+        $this->investService = $investService;
+        $this->projectService = $projectService;
     }
 
     protected function configure(): void
@@ -33,16 +32,21 @@ final class ListCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $io->title('List projects');
+        $this->io->title('List projects');
+        $this->io->table(
+            ['Name', 'Url', 'Git Branch'],
+            $this->projectService->getAll()->map(function (Project $project) {
+                $row = [$project->getName(), $project->getUrl()];
 
-        $io->table(
-            ['Name', 'Url', 'Branch'],
-            $this->projectService->getAll()->map(fn (Project $project) => [
-                $project->getName(),
-                $project->getUrl(),
-                $this->gitService->getBranch($project),
-            ])->toArray()
+                try {
+                    $invest = $this->investService->getByProject($project);
+                    $row[] = $invest->getCheckout()->getBranch();
+                } catch (\Exception $e) {
+                    $row[] = $e->getMessage();
+                }
+
+                return $row;
+            })
         );
 
         return 1;
