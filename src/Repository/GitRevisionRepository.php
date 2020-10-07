@@ -16,6 +16,12 @@ final class GitRevisionRepository extends ServiceEntityRepository
         parent::__construct($registry, GitRevision::class);
     }
 
+    public function create(GitRevision $revision): void
+    {
+        $this->getEntityManager()->persist($revision);
+        $this->getEntityManager()->flush();
+    }
+
     public function findByCheckout(Checkout $checkout): ?GitRevision
     {
         $qb = $this->createQueryBuilder('gr');
@@ -28,11 +34,5 @@ final class GitRevisionRepository extends ServiceEntityRepository
         ;
 
         return $revision instanceof GitRevision ? $revision : null;
-    }
-
-    public function create(GitRevision $revision): void
-    {
-        $this->getEntityManager()->persist($revision);
-        $this->getEntityManager()->flush();
     }
 }
