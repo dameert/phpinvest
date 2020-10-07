@@ -23,7 +23,7 @@ final class FileRepository extends ServiceEntityRepository
 
     public function saveCollection(FileCollection $fileCollection): void
     {
-        $json = json_encode($fileCollection->map(fn(File $file) => [
+        $json = json_encode($fileCollection->map(fn (File $file) => [
             'id' => $file->getId()->jsonSerialize(),
             'c_time' => $file->getCTime()->format(\DATE_ATOM),
             'filename' => $file->getFilename(),

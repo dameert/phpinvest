@@ -11,13 +11,12 @@ use Ramsey\Uuid\UuidInterface;
 
 final class Project
 {
+    private Collection $gitRevisions;
     private string $host;
     private UuidInterface $id;
     private string $name;
     private string $organizationName;
     private string $repositoryName;
-    private Collection $gitRevisions;
-
 
     public function __construct(string $host, string $name, string $organizationName, string $repositoryName)
     {
